@@ -1,12 +1,8 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import {
-  S3Client,
-  GetObjectCommand,
-  PutObjectCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
-import { ddbDocumentClient } from './ddbDocumentClient';
+import { apiResponse, ddbDocumentClient } from './shared';
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
 
 const s3client = new S3Client({});
@@ -30,16 +26,10 @@ export async function handler(): Promise<APIGatewayProxyResult> {
     const presignedUrl = await getSignedUrl(s3client, command, {
       expiresIn: 3600,
     });
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ pk, presignedUrl, status: item.status }),
-    };
+    return apiResponse({ pk, presignedUrl, status: item.status });
   } catch (err) {
     console.error(err);
 
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: (err as any).message }),
-    };
+    return apiResponse({ message: (err as any).message }, 500);
   }
 }

@@ -8,3 +8,15 @@ export const ddbDocumentClient = DynamoDBDocument.from(client, {
     convertClassInstanceToMap: true,
   },
 });
+
+export function apiResponse(result: object, statusCode = 200) {
+  return {
+    statusCode,
+    body: JSON.stringify(result),
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+      'Access-Control-Allow-Headers': '*',
+    },
+  };
+}
