@@ -7,13 +7,13 @@
     "clean": "rimraf dist",
     "build": "tsc --noEmit",
     "deploy": "npm run cdk -- deploy --require-approval never",
+    "deploy:app": "npm run deploy -w packages/frontend",
     "destroy": "npm run cdk -- destroy",
     "diff": "npm run cdk -- diff",
     "format": "prettier --write \"**/*.ts\"",
     "integration-test": "jest spec/integration",
     "lint": "npm run lint:ci -- --fix",
     "lint:ci": "eslint \"**/*.ts\"",
-    "deploy:app": "aws s3 sync s3://ssg-api-prod-images ./backup/bucket --delete --profile lsw --region us-east-1",
     "test": "jest spec/unit"
   },
   "author": "Daniel, Divyesh, Juliana, Pavan, Ivan",
@@ -30,5 +30,8 @@
     "@lsw-apps/infrastructure": "^1.0.0",
     "constructs": "^10.2.70",
     "esbuild": "^0.19.4"
-  }
+  },
+  "workspaces": [
+    "packages/frontend"
+  ]
 }
