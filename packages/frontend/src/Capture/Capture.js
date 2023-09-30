@@ -1,5 +1,6 @@
 import React from 'react';
-import Camera from 'react-html5-camera-photo';
+import Camera, {FACING_MODES, IMAGE_TYPES} from 'react-html5-camera-photo';
+import { useNavigate } from "react-router-dom";
 import 'react-html5-camera-photo/build/css/index.css';
 import ImageUploading from 'react-images-uploading';
 import Button from '@mui/material/Button';
@@ -11,6 +12,7 @@ function Capture() {
   const [images, setImages] = React.useState([]);
   const [showCamera, setShowCamera] = React.useState(false);
   const maxNumberOfImages = 1;
+  const navigate = useNavigate();
 
   const onChange = (imageList, addUpdateIndex) => {
     console.log(imageList, addUpdateIndex);
@@ -27,16 +29,32 @@ function Capture() {
     })
   }
 
+  const convertDataURIToBinary = (dataURI) => {
+    let BASE64_MARKER = ';base64,';
+    let base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+    let base64 = dataURI.substring(base64Index);
+    let raw = window.atob(base64);
+    let rawLength = raw.length;
+    let array = new Uint8Array(new ArrayBuffer(rawLength));
+
+    for (let i = 0; i < rawLength; i++) {
+      array[i] = raw.charCodeAt(i);
+    }
+    return array;
+  };
+
   const onTakePhoto = function (dataUri) {
     setImageData(dataUri)
     setShowCamera(false)
-    getSignedS3UploadImageURL().then(function (signedURLData) {
-      return fetch(signedURLData.presignedUrl, {
+    let signedUrlData
+    getSignedS3UploadImageURL().then(function (signedURLResponse) {
+      signedUrlData = signedURLResponse
+      return fetch(signedUrlData.presignedUrl, {
         method: "PUT",
-        body: dataUri
+        body: convertDataURIToBinary(dataUri)
       })
     }).then(function (output) {
-      debugger
+      navigate("/describe?id=" + signedUrlData.pk);
     })
   }
 
@@ -51,12 +69,22 @@ function Capture() {
         )
       }
       {
-        showCamera && <Camera onTakePhoto={onTakePhoto} />
+        showCamera && (
+          <Camera
+            imageType={IMAGE_TYPES.JPG}
+            idealFacingMode={FACING_MODES.ENVIRONMENT}
+            // imageCompression={0.97}
+            onTakePhoto={onTakePhoto} />
+        )
       }
       {
-        !showCamera && <Button variant="contained" onClick={() => {
-          setShowCamera(true);
-        }}>Use Camera</Button>
+        !showCamera && (
+            <Button
+              variant="contained"
+              onClick={() => {
+              setShowCamera(true);
+              }}>Use Camera</Button>
+        )
       }
 
       <ImageUploading
