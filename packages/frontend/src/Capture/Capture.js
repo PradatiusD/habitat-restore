@@ -3,15 +3,13 @@ import Camera from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 import ImageUploading from 'react-images-uploading';
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import './Capture.css';
 
 function Capture() {
-  const handleTakePhoto = function (dataUri) {
-    console.log(dataUri)
-  }
-
+  const [imageData, setImageData] = React.useState(null)
   const [images, setImages] = React.useState([]);
-  const [useCamera, setUseCamera] = React.useState(false);
+  const [showCamera, setShowCamera] = React.useState(false);
   const maxNumberOfImages = 1;
 
   const onChange = (imageList, addUpdateIndex) => {
@@ -19,14 +17,48 @@ function Capture() {
     setImages(imageList);
   };
 
+  function getSignedS3UploadImageURL () {
+    const url = "https://h6h6v7uald.execute-api.us-east-1.amazonaws.com/prod/images"
+    const params = {
+      method: "POST"
+    }
+    return fetch(url, params).then(function (response) {
+      return response.json()
+    })
+  }
+
+  const onTakePhoto = function (dataUri) {
+    setImageData(dataUri)
+    setShowCamera(false)
+    getSignedS3UploadImageURL().then(function (signedURLData) {
+      return fetch(signedURLData.presignedUrl, {
+        method: "PUT",
+        body: dataUri
+      })
+    }).then(function (output) {
+      debugger
+    })
+  }
+
+
   return (
     <div className="Capture-Page">
-      <Button variant="contained" onClick={() => {
-        setUseCamera(true);
-      }}>Use Camera</Button>
       {
-        useCamera && <Camera onTakePhoto = { (dataUri) => { handleTakePhoto(dataUri); } } />
+        imageData && (
+          <Paper elevation={3}>
+            <img src={imageData} />
+          </Paper>
+        )
       }
+      {
+        showCamera && <Camera onTakePhoto={onTakePhoto} />
+      }
+      {
+        !showCamera && <Button variant="contained" onClick={() => {
+          setShowCamera(true);
+        }}>Use Camera</Button>
+      }
+
       <ImageUploading
         multiple
         value={images}
