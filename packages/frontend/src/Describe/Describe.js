@@ -40,6 +40,7 @@ function Describe() {
   const [isLoading, setIsLoading] = useState(true)
   const [googleVisionResponse, setGoogleVisionResponse] = useState(null)
   const [product, setProduct] = useState(null)
+  const [productTitle, setProductTitle] = useState('')
 
   useEffect(function () {
     pollUntilValidStatus().then(function (response) {
@@ -59,6 +60,7 @@ function Describe() {
 
   return (
     <section className="Describe-Page">
+      <p>{product && product.title}</p>
       {
         imageUrl && <img className="user-image" src={imageUrl}/>
       }
@@ -66,7 +68,7 @@ function Describe() {
         product && (
           <div>
             <TextField
-              value={product && product.title ? product.title :''}
+              value={productTitle}
               variant="outlined"
               multiline
               rows={3}
@@ -74,7 +76,7 @@ function Describe() {
               onChange={(e) => {
                 const copyProduct = JSON.parse(JSON.stringify(product))
                 copyProduct.title = e.target.value
-                setProduct(product)
+                setProductTitle(copyProduct.title)
               }}
             />
             <Button variant="outlined" onClick={() => {}}>Create</Button>
@@ -100,6 +102,7 @@ function Describe() {
                     <div className="select-container">
                       <Button variant="outlined" onClick={() => {
                         setProduct(data)
+                        setProductTitle(data.title)
                       }}>Select</Button>
                     </div>
                   </CardContent>
