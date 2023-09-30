@@ -1,5 +1,11 @@
 import { LswApi } from '@lsw-apps/infrastructure';
-import { Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  CfnOutput,
+  Duration,
+  RemovalPolicy,
+  Stack,
+  StackProps,
+} from 'aws-cdk-lib';
 import { Distribution, OriginAccessIdentity } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
@@ -56,25 +62,25 @@ export class HabitatStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    // const originAccessIdentity = new OriginAccessIdentity(
-    //   this,
-    //   'OriginAccessIdentity',
-    //   {
-    //     comment: 'Access identity between CloudFront and S3 bucket',
-    //   }
-    // );
+    const originAccessIdentity = new OriginAccessIdentity(
+      this,
+      'OriginAccessIdentity',
+      {
+        comment: 'Access identity between CloudFront and S3 bucket',
+      }
+    );
 
-    // const distribution = new Distribution(this, 'AppDistribution', {
-    //   defaultBehavior: {
-    //     origin: new S3Origin(appBucket, {
-    //       originAccessIdentity,
-    //     }),
-    //   },
-    // });
+    const distribution = new Distribution(this, 'AppDistribution', {
+      defaultBehavior: {
+        origin: new S3Origin(appBucket, {
+          originAccessIdentity,
+        }),
+      },
+    });
 
-    // const api = new LswApi(this, 'Api', {
-    //   restApiName: prefix,
-    // });
+    const api = new LswApi(this, 'Api', {
+      restApiName: prefix,
+    });
 
     // const defaults = {
     //   api,
@@ -101,5 +107,12 @@ export class HabitatStack extends Stack {
     //   keepWarm: true,
     //   ddbCrud: [imagesTable.tableName, statsTable.tableName],
     // });
+
+    new CfnOutput(this, 'WebURL', {
+      value: distribution.distributionDomainName,
+    });
+    new CfnOutput(this, 'ApiURL', {
+      value: api.url,
+    });
   }
 }
