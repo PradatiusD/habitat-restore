@@ -2,6 +2,7 @@ import React from 'react';
 import Camera from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 import ImageUploading from 'react-images-uploading';
+import Button from '@mui/material/Button';
 
 function Capture() {
   const handleTakePhoto = function (dataUri) {
@@ -9,6 +10,7 @@ function Capture() {
   }
 
   const [images, setImages] = React.useState([]);
+  const [useCamera, setUseCamera] = React.useState(false);
   const maxNumber = 69;
 
   const onChange = (imageList, addUpdateIndex) => {
@@ -19,7 +21,12 @@ function Capture() {
 
   return (
     <div className="Capture">
-      <Camera onTakePhoto = { (dataUri) => { handleTakePhoto(dataUri); } } />
+      <Button variant="contained" onClick={() => {
+        setUseCamera(true);
+      }}>Use Camera</Button>
+      {
+        useCamera && <Camera onTakePhoto = { (dataUri) => { handleTakePhoto(dataUri); } } />
+      }
       <ImageUploading
         multiple
         value={images}
@@ -38,24 +45,13 @@ function Capture() {
         }) => (
           // write your building UI
           <div className="upload__image-wrapper">
-            <button
-              style={isDragging ? { color: 'red' } : undefined}
+            <Button
+              variant="contained"
               onClick={onImageUpload}
               {...dragProps}
             >
               Upload own image
-            </button>
-            &nbsp;
-            <button onClick={onImageRemoveAll}>Remove all images</button>
-            {imageList.map((image, index) => (
-              <div key={index} className="image-item">
-                <img src={image['data_url']} alt="" width="100" />
-                <div className="image-item__btn-wrapper">
-                  <button onClick={() => onImageUpdate(index)}>Update</button>
-                  <button onClick={() => onImageRemove(index)}>Remove</button>
-                </div>
-              </div>
-            ))}
+            </Button>
           </div>
         )}
       </ImageUploading>
