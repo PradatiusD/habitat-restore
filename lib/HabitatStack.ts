@@ -18,7 +18,7 @@ import {
 } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { resolve } from 'path';
 
@@ -55,6 +55,17 @@ export class HabitatStack extends Stack {
         restrictPublicBuckets: false,
       },
       removalPolicy: RemovalPolicy.DESTROY,
+      cors: [
+        {
+          // For presigned URL access
+          allowedOrigins: [
+            // In production, this URL will be known
+            '*',
+          ],
+          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD],
+          allowedHeaders: ['*'],
+        },
+      ],
     });
     // Images are public on purpose
     imageBucket.addToResourcePolicy(
