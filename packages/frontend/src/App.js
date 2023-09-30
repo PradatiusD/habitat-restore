@@ -2,11 +2,12 @@ import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
+    <header>
+      <nav className="navbar">
+        <img src="https://habitatbroward.org/wp-content/uploads/2023/06/habitat-for-humanity-broward-logo.png" alt=""/>
         <h1>Simple Scan</h1>
-      </header>
-    </div>
+      </nav>
+    </header>
   );
 }
 
