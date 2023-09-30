@@ -15,12 +15,20 @@ import {
   Architecture,
   HttpMethod,
   IFunction,
+  Function,
 } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
+import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import { resolve } from 'path';
+
+/**
+ * Python lambda developed separately from CDK stack
+ */
+const imageProcessingLambdaArn =
+  'arn:aws:lambda:us-east-1:286792073781:function:habitat-restore-image-processing';
 
 export class HabitatStack extends Stack {
   api: RestApi;
@@ -151,6 +159,16 @@ export class HabitatStack extends Stack {
     });
     dataTable.grantReadWriteData(getImage);
     this.addApiPath(getImage, 'images/{pk}', HttpMethod.GET);
+
+    const imageProcessingLambda = Function.fromFunctionArn(
+      this,
+      'ImageProcessingLambdaImport',
+      imageProcessingLambdaArn
+    );
+
+    imageBucket.addObjectCreatedNotification(
+      new LambdaDestination(imageProcessingLambda)
+    );
 
     new CfnOutput(this, 'WebURL', {
       value: distribution.distributionDomainName,

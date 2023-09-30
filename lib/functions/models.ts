@@ -13,6 +13,7 @@ export interface Donation extends TableItem {
 export interface DonationResults extends TableItem {
   pk: string;
   sk: 'results';
+  url: string;
   // TBD
   [name: string]: any;
 }
