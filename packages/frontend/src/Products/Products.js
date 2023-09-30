@@ -1,11 +1,11 @@
-function Purchase() {
+import Paper from '@mui/material/Paper';
+
+function Products() {
   return (
-    <div className="Purchase">
-      <header className="Purchase-header">
-        Purchase
-      </header>
+    <div className="Products">
+      <Paper elevation={3} />
     </div>
   );
 }
 
-export default Purchase;
+export default Products;

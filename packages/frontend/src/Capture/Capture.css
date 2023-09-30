@@ -1,0 +1,10 @@
+.Capture-Page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.Capture-Page button {
+    margin: 1em 0.5em;
+    text-transform: initial;
+}
