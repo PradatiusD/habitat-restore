@@ -1,0 +1,17 @@
+.Describe-Page .user-image {
+    max-width: 100%;
+}
+
+.card-result {
+    width: calc(50% - 20px);
+    display: inline-block;
+    vertical-align: top;
+    margin: 10px;
+}
+
+.image-source-icon {
+    height: 14px;
+    position: relative;
+    top: 1px;
+    margin-right: 5px;
+}

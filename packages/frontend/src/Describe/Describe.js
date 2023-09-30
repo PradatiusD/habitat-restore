@@ -1,7 +1,12 @@
 import TextField from '@mui/material/TextField';
-function Describe() {
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
+import CardContent from '@mui/material/CardContent';
+import './Describe.css';
 
-  const data = {
+function Describe() {
+  const imageURL = 'https://habitat-restore-images.s3.amazonaws.com/20230930_095354.jpg'
+  const googleVisionResponse = {
     "search_metadata": {
       "id": "65187c01c9de45c6f8d2fb4b",
       "status": "Success",
@@ -515,13 +520,28 @@ function Describe() {
   }
 
   return (
-    <section>
+    <section className="Describe-Page">
+      <img className="user-image" src={imageURL}/>
       <div>
         <TextField label="Product Title" variant="outlined" />
       </div>
       <div>
         <TextField label="Product Description" variant="outlined" multiline rows={3} />
       </div>
+      {
+        googleVisionResponse.visual_matches.map(function (data) {
+          return (
+            <Card key={data.position} className="card-result">
+              <CardContent>
+                <img src={data.thumbnail} />
+                <Typography>{data.title}</Typography>
+                <a href={data.link}>{data.source}</a>
+                <img src={data.source_icon} className="image-source-icon" />
+              </CardContent>
+            </Card>
+          )
+        })
+      }
     </section>
   );
 }
