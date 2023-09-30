@@ -5,7 +5,7 @@ import {
   Stack,
   StackProps,
 } from 'aws-cdk-lib';
-import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Cors, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Distribution, OriginAccessIdentity } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
@@ -103,6 +103,11 @@ export class HabitatStack extends Stack {
 
     this.api = new RestApi(this, 'Api', {
       restApiName: prefix,
+
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS, // this is also the default
+      },
     });
 
     const postImage = new NodejsFunction(this, 'Images', {
@@ -119,7 +124,6 @@ export class HabitatStack extends Stack {
     });
     dataTable.grantReadWriteData(postImage);
     imageBucket.grantWrite(postImage);
-
     this.addApiPath(postImage, 'images', HttpMethod.POST);
 
     new CfnOutput(this, 'WebURL', {
@@ -131,18 +135,11 @@ export class HabitatStack extends Stack {
   }
 
   addApiPath(func: IFunction, path: string, method: HttpMethod) {
-    const resource = this.api.root.resourceForPath(
-      path.startsWith('/') ? path : `/${path}`
-    );
+    const resource = this.api.root.resourceForPath(path);
     const integration = new LambdaIntegration(func, {
       requestTemplates: { 'application/json': '{ "statusCode": "200" }' },
     });
 
-    if (method === 'OPTIONS') {
-      // CORS Preflight does not use auth
-      resource.addMethod(method, integration);
-    } else {
-      resource.addMethod(method, integration);
-    }
+    resource.addMethod(method, integration);
   }
 }
