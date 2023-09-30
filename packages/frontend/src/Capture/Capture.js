@@ -3,6 +3,7 @@ import Camera from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 import ImageUploading from 'react-images-uploading';
 import Button from '@mui/material/Button';
+import './Capture.css';
 
 function Capture() {
   const handleTakePhoto = function (dataUri) {
@@ -11,7 +12,7 @@ function Capture() {
 
   const [images, setImages] = React.useState([]);
   const [useCamera, setUseCamera] = React.useState(false);
-  const maxNumber = 69;
+  const maxNumberOfImages = 1;
 
   const onChange = (imageList, addUpdateIndex) => {
     console.log(imageList, addUpdateIndex);
@@ -19,7 +20,7 @@ function Capture() {
   };
 
   return (
-    <div className="Capture">
+    <div className="Capture-Page">
       <Button variant="contained" onClick={() => {
         setUseCamera(true);
       }}>Use Camera</Button>
@@ -30,7 +31,7 @@ function Capture() {
         multiple
         value={images}
         onChange={onChange}
-        maxNumber={maxNumber}
+        maxNumber={maxNumberOfImages}
         dataURLKey="data_url"
       >
         {({
@@ -42,16 +43,13 @@ function Capture() {
           isDragging,
           dragProps,
         }) => (
-          // write your building UI
-          <div className="upload__image-wrapper">
-            <Button
-              variant="contained"
-              onClick={onImageUpload}
-              {...dragProps}
-            >
-              Upload own image
-            </Button>
-          </div>
+          <Button
+            variant="contained"
+            onClick={onImageUpload}
+            {...dragProps}
+          >
+            Upload From Media Library
+          </Button>
         )}
       </ImageUploading>
     </div>
