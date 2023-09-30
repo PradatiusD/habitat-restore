@@ -1,0 +1,187 @@
+{
+    "Labels": [
+        {
+            "Name": "Furniture",
+            "Confidence": 99.99998474121094,
+            "Instances": [],
+            "Parents": []
+        },
+        {
+            "Name": "Chair",
+            "Confidence": 99.97331237792969,
+            "Instances": [],
+            "Parents": [
+                {
+                    "Name": "Furniture"
+                }
+            ]
+        },
+        {
+            "Name": "Armchair",
+            "Confidence": 99.30382537841797,
+            "Instances": [],
+            "Parents": [
+                {
+                    "Name": "Chair"
+                },
+                {
+                    "Name": "Furniture"
+                }
+            ]
+        },
+        {
+            "Name": "Adult",
+            "Confidence": 98.70567321777344,
+            "Instances": [
+                {
+                    "BoundingBox": {
+                        "Width": 0.2016451060771942,
+                        "Height": 0.27542445063591003,
+                        "Left": 0.00015874227392487228,
+                        "Top": 0.07935184985399246
+                    },
+                    "Confidence": 98.70567321777344
+                }
+            ],
+            "Parents": [
+                {
+                    "Name": "Person"
+                }
+            ]
+        },
+        {
+            "Name": "Male",
+            "Confidence": 98.70567321777344,
+            "Instances": [
+                {
+                    "BoundingBox": {
+                        "Width": 0.2016451060771942,
+                        "Height": 0.27542445063591003,
+                        "Left": 0.00015874227392487228,
+                        "Top": 0.07935184985399246
+                    },
+                    "Confidence": 98.70567321777344
+                }
+            ],
+            "Parents": [
+                {
+                    "Name": "Person"
+                }
+            ]
+        },
+        {
+            "Name": "Man",
+            "Confidence": 98.70567321777344,
+            "Instances": [
+                {
+                    "BoundingBox": {
+                        "Width": 0.2016451060771942,
+                        "Height": 0.27542445063591003,
+                        "Left": 0.00015874227392487228,
+                        "Top": 0.07935184985399246
+                    },
+                    "Confidence": 98.70567321777344
+                }
+            ],
+            "Parents": [
+                {
+                    "Name": "Adult"
+                },
+                {
+                    "Name": "Male"
+                },
+                {
+                    "Name": "Person"
+                }
+            ]
+        },
+        {
+            "Name": "Person",
+            "Confidence": 98.70567321777344,
+            "Instances": [
+                {
+                    "BoundingBox": {
+                        "Width": 0.2016451060771942,
+                        "Height": 0.27542445063591003,
+                        "Left": 0.00015874227392487228,
+                        "Top": 0.07935184985399246
+                    },
+                    "Confidence": 98.70567321777344
+                },
+                {
+                    "BoundingBox": {
+                        "Width": 0.023073403164744377,
+                        "Height": 0.006998046766966581,
+                        "Left": 0.2166248857975006,
+                        "Top": 0.1789831519126892
+                    },
+                    "Confidence": 79.98653411865234
+                }
+            ],
+            "Parents": []
+        },
+        {
+            "Name": "Couch",
+            "Confidence": 98.58618927001953,
+            "Instances": [
+                {
+                    "BoundingBox": {
+                        "Width": 1.0,
+                        "Height": 0.5560399293899536,
+                        "Left": 0.0,
+                        "Top": 0.28587475419044495
+                    },
+                    "Confidence": 97.70242309570312
+                }
+            ],
+            "Parents": [
+                {
+                    "Name": "Furniture"
+                }
+            ]
+        },
+        {
+            "Name": "Accessories",
+            "Confidence": 96.07477569580078,
+            "Instances": [],
+            "Parents": []
+        },
+        {
+            "Name": "Glasses",
+            "Confidence": 96.07477569580078,
+            "Instances": [
+                {
+                    "BoundingBox": {
+                        "Width": 0.06723697483539581,
+                        "Height": 0.0227295383810997,
+                        "Left": 0.1046009212732315,
+                        "Top": 0.11683091521263123
+                    },
+                    "Confidence": 96.07477569580078
+                }
+            ],
+            "Parents": [
+                {
+                    "Name": "Accessories"
+                }
+            ]
+        },
+        {
+            "Name": "Recliner",
+            "Confidence": 90.83177185058594,
+            "Instances": [],
+            "Parents": [
+                {
+                    "Name": "Armchair"
+                },
+                {
+                    "Name": "Chair"
+                },
+                {
+                    "Name": "Furniture"
+                }
+            ]
+        }
+    ],
+    "LabelModelVersion": "3.0"
+}

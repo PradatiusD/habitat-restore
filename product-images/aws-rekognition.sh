@@ -1,0 +1,1 @@
+aws rekognition detect-labels --image-bytes fileb://brown-leather-double-recliner.jpg > brown-leather-double-recliner.json
