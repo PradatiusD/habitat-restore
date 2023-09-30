@@ -1,4 +1,3 @@
-import { LswApi } from '@lsw-apps/infrastructure';
 import {
   CfnOutput,
   Duration,
@@ -6,16 +5,25 @@ import {
   Stack,
   StackProps,
 } from 'aws-cdk-lib';
+import { Cors, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Distribution, OriginAccessIdentity } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { AnyPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Runtime, Architecture, Code } from 'aws-cdk-lib/aws-lambda';
+import {
+  Runtime,
+  Architecture,
+  HttpMethod,
+  IFunction,
+} from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import { resolve } from 'path';
 
 export class HabitatStack extends Stack {
+  api: RestApi;
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -76,43 +84,62 @@ export class HabitatStack extends Stack {
           originAccessIdentity,
         }),
       },
+      defaultRootObject: 'index.html',
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: Duration.seconds(0),
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: Duration.seconds(0),
+        },
+      ],
     });
 
-    const api = new LswApi(this, 'Api', {
+    this.api = new RestApi(this, 'Api', {
       restApiName: prefix,
+
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS, // this is also the default
+      },
     });
 
-    // const defaults = {
-    //   api,
-    //   handler: 'index.handler',
-    //   runtime: Runtime.NODEJS_18_X,
-    //   architecture: Architecture.ARM_64,
-    //   logRetention: RetentionDays.ONE_MONTH,
-    //   timeout: Duration.seconds(15),
-    //   environment: {
-    //     LOGGING_LEVEL: 'info',
-    //     IMAGES_BUCKET: imageBucket.bucketName,
-    //     DATA_TABLE: dataTable.tableName,
-    //   },
-    // };
-
-    // const code = (entry: string) => Code.fromAsset(`./dist/${entry}`);
-
-    // const report = new LswApiFunction(this, 'Report', {
-    //   ...defaults,
-    //   code: code('report'),
-    //   paths: {
-    //     report: [HttpMethod.GET],
-    //   },
-    //   keepWarm: true,
-    //   ddbCrud: [imagesTable.tableName, statsTable.tableName],
-    // });
+    const postImage = new NodejsFunction(this, 'Images', {
+      entry: resolve(__dirname, './functions/postImage.ts'),
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      logRetention: RetentionDays.ONE_MONTH,
+      timeout: Duration.seconds(15),
+      environment: {
+        LOGGING_LEVEL: 'info',
+        IMAGES_BUCKET: imageBucket.bucketName,
+        DATA_TABLE: dataTable.tableName,
+      },
+    });
+    dataTable.grantReadWriteData(postImage);
+    imageBucket.grantWrite(postImage);
+    this.addApiPath(postImage, 'images', HttpMethod.POST);
 
     new CfnOutput(this, 'WebURL', {
       value: distribution.distributionDomainName,
     });
     new CfnOutput(this, 'ApiURL', {
-      value: api.url,
+      value: this.api.url,
     });
+  }
+
+  addApiPath(func: IFunction, path: string, method: HttpMethod) {
+    const resource = this.api.root.resourceForPath(path);
+    const integration = new LambdaIntegration(func, {
+      requestTemplates: { 'application/json': '{ "statusCode": "200" }' },
+    });
+
+    resource.addMethod(method, integration);
   }
 }
