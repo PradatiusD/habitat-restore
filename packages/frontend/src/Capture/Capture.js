@@ -18,7 +18,6 @@ function Capture() {
     setImages(imageList);
   };
 
-
   return (
     <div className="Capture">
       <Button variant="contained" onClick={() => {
