@@ -1,8 +1,9 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { apiResponse, ddbDocumentClient } from './shared';
 import { GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { Donation, DonationResults } from './models';
 
-const { IMAGES_BUCKET, DATA_TABLE } = process.env;
+const { DATA_TABLE } = process.env;
 
 export async function handler(
   event: APIGatewayProxyEvent
@@ -13,18 +14,31 @@ export async function handler(
       return apiResponse({ message: 'pk path parameter is required' }, 400);
     }
 
-    const results = await ddbDocumentClient.send(
-      new GetItemCommand({
-        TableName: DATA_TABLE,
-        Key: { pk, sk: 'results' } as any,
-      })
-    );
+    console.log('pk is', pk);
 
-    if (!results.Item) {
-      return apiResponse({ pk, status: 'Item not found' });
+    const details = (
+      await ddbDocumentClient.get({
+        TableName: DATA_TABLE,
+        Key: { pk, sk: 'details' },
+      })
+    ).Item as Donation;
+
+    if (!details) {
+      return apiResponse({ message: 'record does not exist' }, 404);
     }
 
-    return apiResponse(results.Item);
+    const results = (
+      await ddbDocumentClient.get({
+        TableName: DATA_TABLE,
+        Key: { pk, sk: 'results' },
+      })
+    ).Item as DonationResults;
+
+    if (!results) {
+      return apiResponse({ pk, status: 'results-not-ready' });
+    }
+
+    return apiResponse({ status: 'ready', url: details.url, ...results.Item });
   } catch (err) {
     console.error(err);
 

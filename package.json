@@ -14,6 +14,7 @@
     "integration-test": "jest spec/integration",
     "lint": "npm run lint:ci -- --fix",
     "lint:ci": "eslint \"**/*.ts\"",
+    "start": "npm run start -w packages/frontend",
     "test": "jest spec/unit"
   },
   "author": "Daniel, Divyesh, Juliana, Pavan, Ivan",

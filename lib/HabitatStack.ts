@@ -15,12 +15,20 @@ import {
   Architecture,
   HttpMethod,
   IFunction,
+  Function,
 } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
+import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import { resolve } from 'path';
+
+/**
+ * Python lambda developed separately from CDK stack
+ */
+const imageProcessingLambdaArn =
+  'arn:aws:lambda:us-east-1:286792073781:function:habitat-restore-image-processing';
 
 export class HabitatStack extends Stack {
   api: RestApi;
@@ -62,7 +70,7 @@ export class HabitatStack extends Stack {
             // In production, this URL will be known
             '*',
           ],
-          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD],
+          allowedMethods: [HttpMethods.PUT],
           allowedHeaders: ['*'],
         },
       ],
@@ -121,7 +129,7 @@ export class HabitatStack extends Stack {
       },
     });
 
-    const postImage = new NodejsFunction(this, 'Images', {
+    const postImage = new NodejsFunction(this, 'PostImage', {
       entry: resolve(__dirname, './functions/postImage.ts'),
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
@@ -136,6 +144,31 @@ export class HabitatStack extends Stack {
     dataTable.grantReadWriteData(postImage);
     imageBucket.grantWrite(postImage);
     this.addApiPath(postImage, 'images', HttpMethod.POST);
+
+    const getImage = new NodejsFunction(this, 'GetImage', {
+      entry: resolve(__dirname, './functions/getImage.ts'),
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      logRetention: RetentionDays.ONE_MONTH,
+      timeout: Duration.seconds(15),
+      environment: {
+        LOGGING_LEVEL: 'info',
+        IMAGES_BUCKET: imageBucket.bucketName,
+        DATA_TABLE: dataTable.tableName,
+      },
+    });
+    dataTable.grantReadWriteData(getImage);
+    this.addApiPath(getImage, 'images/{pk}', HttpMethod.GET);
+
+    const imageProcessingLambda = Function.fromFunctionArn(
+      this,
+      'ImageProcessingLambdaImport',
+      imageProcessingLambdaArn
+    );
+
+    imageBucket.addObjectCreatedNotification(
+      new LambdaDestination(imageProcessingLambda)
+    );
 
     new CfnOutput(this, 'WebURL', {
       value: distribution.distributionDomainName,
