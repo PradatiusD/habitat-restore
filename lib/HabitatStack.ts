@@ -195,9 +195,9 @@ export class HabitatStack extends Stack {
     dataTable.grantReadData(getDonation);
     this.addApiPath(getDonation, 'donations/{pk}', HttpMethod.GET);
 
-    const listDonations = new NodejsFunction(this, 'ListDonations', {
-      functionName: `${prefix}-list-donations`,
-      entry: resolve(__dirname, './functions/listDonations.ts'),
+    const listPublished = new NodejsFunction(this, 'ListPublished', {
+      functionName: `${prefix}-list-published`,
+      entry: resolve(__dirname, './functions/listPublished.ts'),
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       logRetention: RetentionDays.ONE_MONTH,
@@ -207,8 +207,8 @@ export class HabitatStack extends Stack {
         DATA_TABLE: dataTable.tableName,
       },
     });
-    dataTable.grantReadData(listDonations);
-    this.addApiPath(listDonations, 'donations', HttpMethod.GET);
+    dataTable.grantReadData(listPublished);
+    this.addApiPath(listPublished, 'published', HttpMethod.GET);
 
     const imageProcessingLambda = Function.fromFunctionArn(
       this,

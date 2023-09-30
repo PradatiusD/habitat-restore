@@ -13,9 +13,12 @@ export async function handler(
         await ddbDocumentClient.query({
           TableName: DATA_TABLE,
           IndexName: 'by-status',
-          KeyConditionExpression: 'status = :status',
+          KeyConditionExpression: '#status = :status',
+          ExpressionAttributeNames: {
+            '#status': 'status',
+          },
           ExpressionAttributeValues: {
-            ':sk': 'published',
+            ':status': 'published',
           },
         })
       ).Items ?? ([] as Donation[]);
