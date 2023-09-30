@@ -1,6 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { apiResponse, ddbDocumentClient } from './shared';
-import { GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { Donation, DonationResults } from './models';
 
 const { DATA_TABLE } = process.env;
@@ -13,8 +12,6 @@ export async function handler(
     if (!pk) {
       return apiResponse({ message: 'pk path parameter is required' }, 400);
     }
-
-    console.log('pk is', pk);
 
     const details = (
       await ddbDocumentClient.get({
@@ -38,7 +35,7 @@ export async function handler(
       return apiResponse({ pk, status: 'results-not-ready' });
     }
 
-    return apiResponse({ status: 'ready', url: details.url, ...results.Item });
+    return apiResponse({ ...results, status: 'ready', url: details.url });
   } catch (err) {
     console.error(err);
 

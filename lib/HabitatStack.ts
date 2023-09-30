@@ -8,7 +8,12 @@ import {
 import { Cors, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Distribution, OriginAccessIdentity } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import {
+  AttributeType,
+  BillingMode,
+  ProjectionType,
+  Table,
+} from 'aws-cdk-lib/aws-dynamodb';
 import { AnyPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import {
   Runtime,
@@ -52,6 +57,19 @@ export class HabitatStack extends Stack {
       },
       removalPolicy: RemovalPolicy.DESTROY,
       billingMode: BillingMode.PAY_PER_REQUEST,
+    });
+
+    dataTable.addGlobalSecondaryIndex({
+      indexName: 'by-status',
+      partitionKey: {
+        name: 'status',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'pk',
+        type: AttributeType.STRING,
+      },
+      projectionType: ProjectionType.ALL,
     });
 
     const imageBucket = new Bucket(this, 'ImageBucket', {
@@ -129,8 +147,9 @@ export class HabitatStack extends Stack {
       },
     });
 
-    const postImage = new NodejsFunction(this, 'PostImage', {
-      entry: resolve(__dirname, './functions/postImage.ts'),
+    const postDonation = new NodejsFunction(this, 'PostDonation', {
+      functionName: `${prefix}-post-donation`,
+      entry: resolve(__dirname, './functions/postDonation.ts'),
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       logRetention: RetentionDays.ONE_MONTH,
@@ -141,24 +160,54 @@ export class HabitatStack extends Stack {
         DATA_TABLE: dataTable.tableName,
       },
     });
-    dataTable.grantReadWriteData(postImage);
-    imageBucket.grantWrite(postImage);
-    this.addApiPath(postImage, 'images', HttpMethod.POST);
+    dataTable.grantReadWriteData(postDonation);
+    imageBucket.grantWrite(postDonation);
+    this.addApiPath(postDonation, 'donations', HttpMethod.POST);
 
-    const getImage = new NodejsFunction(this, 'GetImage', {
-      entry: resolve(__dirname, './functions/getImage.ts'),
+    const publish = new NodejsFunction(this, 'PutDonation', {
+      functionName: `${prefix}-put-donation`,
+      entry: resolve(__dirname, './functions/putDonation.ts'),
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       logRetention: RetentionDays.ONE_MONTH,
       timeout: Duration.seconds(15),
       environment: {
         LOGGING_LEVEL: 'info',
-        IMAGES_BUCKET: imageBucket.bucketName,
         DATA_TABLE: dataTable.tableName,
       },
     });
-    dataTable.grantReadWriteData(getImage);
-    this.addApiPath(getImage, 'images/{pk}', HttpMethod.GET);
+    dataTable.grantReadWriteData(publish);
+    this.addApiPath(publish, 'donations/{pk}', HttpMethod.PUT);
+
+    const getDonation = new NodejsFunction(this, 'GetDonation', {
+      functionName: `${prefix}-get-donation`,
+      entry: resolve(__dirname, './functions/getDonation.ts'),
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      logRetention: RetentionDays.ONE_MONTH,
+      timeout: Duration.seconds(15),
+      environment: {
+        LOGGING_LEVEL: 'info',
+        DATA_TABLE: dataTable.tableName,
+      },
+    });
+    dataTable.grantReadData(getDonation);
+    this.addApiPath(getDonation, 'donations/{pk}', HttpMethod.GET);
+
+    const listPublished = new NodejsFunction(this, 'ListPublished', {
+      functionName: `${prefix}-list-published`,
+      entry: resolve(__dirname, './functions/listPublished.ts'),
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      logRetention: RetentionDays.ONE_MONTH,
+      timeout: Duration.seconds(15),
+      environment: {
+        LOGGING_LEVEL: 'info',
+        DATA_TABLE: dataTable.tableName,
+      },
+    });
+    dataTable.grantReadData(listPublished);
+    this.addApiPath(listPublished, 'published', HttpMethod.GET);
 
     const imageProcessingLambda = Function.fromFunctionArn(
       this,
