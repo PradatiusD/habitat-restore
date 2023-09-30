@@ -69,8 +69,7 @@ export class HabitatStack extends Stack {
         name: 'pk',
         type: AttributeType.STRING,
       },
-      projectionType: ProjectionType.INCLUDE,
-      nonKeyAttributes: ['status'],
+      projectionType: ProjectionType.ALL,
     });
 
     const imageBucket = new Bucket(this, 'ImageBucket', {
@@ -165,7 +164,7 @@ export class HabitatStack extends Stack {
     imageBucket.grantWrite(postDonation);
     this.addApiPath(postDonation, 'donations', HttpMethod.POST);
 
-    const putDonation = new NodejsFunction(this, 'PutDonation', {
+    const publish = new NodejsFunction(this, 'PutDonation', {
       functionName: `${prefix}-put-donation`,
       entry: resolve(__dirname, './functions/putDonation.ts'),
       runtime: Runtime.NODEJS_18_X,
@@ -177,8 +176,8 @@ export class HabitatStack extends Stack {
         DATA_TABLE: dataTable.tableName,
       },
     });
-    dataTable.grantReadWriteData(putDonation);
-    this.addApiPath(putDonation, 'donations', HttpMethod.PUT);
+    dataTable.grantReadWriteData(publish);
+    this.addApiPath(publish, 'donations/{pk}', HttpMethod.PUT);
 
     const getDonation = new NodejsFunction(this, 'GetDonation', {
       functionName: `${prefix}-get-donation`,
