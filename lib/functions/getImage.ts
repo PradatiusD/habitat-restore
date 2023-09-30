@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { apiResponse, ddbDocumentClient } from './shared';
 import { GetItemCommand } from '@aws-sdk/client-dynamodb';
 
-const { IMAGES_BUCKET, DATA_TABLE } = process.env;
+const { DATA_TABLE } = process.env;
 
 export async function handler(
   event: APIGatewayProxyEvent
@@ -13,18 +13,26 @@ export async function handler(
       return apiResponse({ message: 'pk path parameter is required' }, 400);
     }
 
-    const results = await ddbDocumentClient.send(
-      new GetItemCommand({
-        TableName: DATA_TABLE,
-        Key: { pk, sk: 'results' } as any,
-      })
-    );
+    console.log('pk is', pk);
 
-    if (!results.Item) {
-      return apiResponse({ pk, status: 'Item not found' });
+    const details = await ddbDocumentClient.get({
+      TableName: DATA_TABLE,
+      Key: { pk, sk: 'details' },
+    });
+    if (!details.Item) {
+      return apiResponse({ message: 'record does not exist' }, 404);
     }
 
-    return apiResponse(results.Item);
+    const results = await ddbDocumentClient.get({
+      TableName: DATA_TABLE,
+      Key: { pk, sk: 'results' },
+    });
+
+    if (!results.Item) {
+      return apiResponse({ pk, status: 'results-not-ready' });
+    }
+
+    return apiResponse({ status: 'ready', ...results.Item });
   } catch (err) {
     console.error(err);
 

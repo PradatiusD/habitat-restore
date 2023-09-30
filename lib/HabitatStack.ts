@@ -62,7 +62,7 @@ export class HabitatStack extends Stack {
             // In production, this URL will be known
             '*',
           ],
-          allowedMethods: [HttpMethods.GET, HttpMethods.HEAD],
+          allowedMethods: [HttpMethods.PUT],
           allowedHeaders: ['*'],
         },
       ],
@@ -121,7 +121,7 @@ export class HabitatStack extends Stack {
       },
     });
 
-    const postImage = new NodejsFunction(this, 'Images', {
+    const postImage = new NodejsFunction(this, 'PostImage', {
       entry: resolve(__dirname, './functions/postImage.ts'),
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
@@ -136,6 +136,21 @@ export class HabitatStack extends Stack {
     dataTable.grantReadWriteData(postImage);
     imageBucket.grantWrite(postImage);
     this.addApiPath(postImage, 'images', HttpMethod.POST);
+
+    const getImage = new NodejsFunction(this, 'GetImage', {
+      entry: resolve(__dirname, './functions/getImage.ts'),
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      logRetention: RetentionDays.ONE_MONTH,
+      timeout: Duration.seconds(15),
+      environment: {
+        LOGGING_LEVEL: 'info',
+        IMAGES_BUCKET: imageBucket.bucketName,
+        DATA_TABLE: dataTable.tableName,
+      },
+    });
+    dataTable.grantReadWriteData(getImage);
+    this.addApiPath(getImage, 'images/{pk}', HttpMethod.GET);
 
     new CfnOutput(this, 'WebURL', {
       value: distribution.distributionDomainName,
