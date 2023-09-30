@@ -15,7 +15,9 @@ Before starting any design work, our team decided to take a field trip to the Br
 
 The store manager Mark, was very gracious and spent 30 minutes talking about the store, the mission, the volunteers, and the amazing items that pass through his store.
 
-Some interesting points
+![Selfie!](presentation-images/store-manager.jpg)
+
+### Some interesting points
 
 - Each store operates like a franchise and typically manages their own outreach, website, etc.
 - Some stores, like Los Angeles have an excellent social media presence including viral videos on TikTok.
