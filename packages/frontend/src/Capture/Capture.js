@@ -20,7 +20,7 @@ function Capture() {
   };
 
   function getSignedS3UploadImageURL () {
-    const url = "https://h6h6v7uald.execute-api.us-east-1.amazonaws.com/prod/images"
+    const url = "https://h6h6v7uald.execute-api.us-east-1.amazonaws.com/prod/donations"
     const params = {
       method: "POST"
     }

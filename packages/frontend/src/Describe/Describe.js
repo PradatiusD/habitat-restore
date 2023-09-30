@@ -2,12 +2,13 @@ import TextField from '@mui/material/TextField';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
-import MockData from './google-vision-mock-response'
+import Button from '@mui/material/Button';
+// import MockData from './google-vision-mock-response'
 import './Describe.css';
 import {useEffect, useState} from "react";
 function fetchStatus () {
   const id = new URL(window.location.href).searchParams.get('id')
-  const url = "https://h6h6v7uald.execute-api.us-east-1.amazonaws.com/prod/images/" + id
+  const url = "https://h6h6v7uald.execute-api.us-east-1.amazonaws.com/prod/donations/" + id
   console.log('Querying id ' + id)
   return fetch(url).then(function (res) {
     return res.json()
@@ -16,31 +17,38 @@ function fetchStatus () {
 
 function delay (time) {
   return new Promise((fulfill, reject) => {
-    setTimeout(fulfill, time || 1000)
+    setTimeout(function () {
+      fulfill()
+    }, time || 1000)
   })
 }
 
 function pollUntilValidStatus () {
-  return fetchStatus().then((response) => {
-    if (response.status !== 'results-not-ready') {
+  return delay().then(() => {
+    return fetchStatus()
+  }).then(function (response) {
+    if (response.status === 'ready') {
       return response
     }
-    return delay()
-  }).then(function () {
     return pollUntilValidStatus()
   })
 }
 
 function Describe() {
-  const imageURL = 'https://habitat-restore-images.s3.amazonaws.com/20230930_095354.jpg'
-  const googleVisionResponse = MockData
+  // const googleVisionResponse = MockData
+  const [imageUrl, setImageUrl] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [googleVisionResponse, setGoogleVisionResponse] = useState(null)
+  const [product, setProduct] = useState(null)
+  const [productTitle, setProductTitle] = useState('')
 
   useEffect(function () {
     pollUntilValidStatus().then(function (response) {
       setIsLoading(false)
+      setGoogleVisionResponse(response)
+      setImageUrl(response.url)
     })
-  }, [])
+  }, [isLoading])
 
   if (isLoading) {
     return (
@@ -52,27 +60,58 @@ function Describe() {
 
   return (
     <section className="Describe-Page">
-      <img className="user-image" src={imageURL}/>
-      <div>
-        <TextField label="Product Title" variant="outlined" />
-      </div>
-      <div>
-        <TextField label="Product Description" variant="outlined" multiline rows={3} />
-      </div>
+      <p>{product && product.title}</p>
       {
-        googleVisionResponse.visual_matches.map(function (data) {
-          return (
-            <Card key={data.position} className="card-result">
-              <CardContent>
-                <img src={data.thumbnail} />
-                <Typography>{data.title}</Typography>
-                <a href={data.link}>{data.source}</a>
-                <img src={data.source_icon} className="image-source-icon" />
-              </CardContent>
-            </Card>
-          )
-        })
+        imageUrl && <img className="user-image" src={imageUrl}/>
       }
+      {
+        product && (
+          <div>
+            <TextField
+              value={productTitle}
+              variant="outlined"
+              multiline
+              rows={3}
+              fullWidth
+              onChange={(e) => {
+                const copyProduct = JSON.parse(JSON.stringify(product))
+                copyProduct.title = e.target.value
+                setProductTitle(copyProduct.title)
+              }}
+            />
+            <Button variant="outlined" onClick={() => {}}>Create</Button>
+          </div>
+        )
+      }
+      <div className="visual-matches-container">
+        {
+          googleVisionResponse && (
+            googleVisionResponse.visual_matches.map(function (data) {
+              return (
+                <Card key={data.position} className="card-result">
+                  <CardContent>
+                    <img className="product-thumbnail" src={data.thumbnail} />
+                    <Typography>{data.title}</Typography>
+                    {
+                      data.price && (
+                        <Typography variant="h6">{data.price.value}</Typography>
+                      )
+                    }
+                    <img src={data.source_icon} className="image-source-icon" />
+                    <a href={data.link} target="_blank">{data.source}</a>
+                    <div className="select-container">
+                      <Button variant="outlined" onClick={() => {
+                        setProduct(data)
+                        setProductTitle(data.title)
+                      }}>Select</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })
+          )
+        }
+      </div>
     </section>
   );
 }

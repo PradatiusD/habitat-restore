@@ -3,7 +3,6 @@
 }
 
 .card-result {
-    width: calc(50% - 20px);
     display: inline-block;
     vertical-align: top;
     margin: 10px;
@@ -14,4 +13,18 @@
     position: relative;
     top: 1px;
     margin-right: 5px;
+}
+
+.product-thumbnail {
+    max-width: 100%;
+}
+
+.visual-matches-container {
+    columns: 2;
+    column-gap: 2px;
+}
+
+.select-container button {
+    text-transform: initial;
+    margin-top: 1em;
 }
