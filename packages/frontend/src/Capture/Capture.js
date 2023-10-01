@@ -11,6 +11,7 @@ function Capture() {
   const [imageData, setImageData] = React.useState(null)
   const [images, setImages] = React.useState([]);
   const [showCamera, setShowCamera] = React.useState(false);
+  const [canContinueWithPhoto, setCanContinueWithPhoto] = React.useState(false);
   const maxNumberOfImages = 1;
   const navigate = useNavigate();
 
@@ -46,6 +47,9 @@ function Capture() {
   const onTakePhoto = function (dataUri) {
     setImageData(dataUri)
     setShowCamera(false)
+    if (!canContinueWithPhoto) {
+      return
+    }
     let signedUrlData
     getSignedS3UploadImageURL().then(function (signedURLResponse) {
       signedUrlData = signedURLResponse
@@ -78,12 +82,34 @@ function Capture() {
         )
       }
       {
-        !showCamera && (
+        !showCamera && !imageData && (
             <Button
               variant="contained"
               onClick={() => {
               setShowCamera(true);
               }}>Use Camera</Button>
+        )
+      }
+
+      {
+        imageData && (
+          <div>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setCanContinueWithPhoto(true);
+                setShowCamera(false);
+                onTakePhoto(imageData);
+              }}>Confirm</Button>
+
+            <Button
+              variant="contained"
+              onClick={() => {
+                setImageData(null)
+                setCanContinueWithPhoto(false);
+                setShowCamera(true);
+              }}>Retake</Button>
+          </div>
         )
       }
 
