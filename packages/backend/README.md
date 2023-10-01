@@ -1,3 +1,3 @@
 # Python Backend
 
-# lambda funciton and models for code
+# lambda function and models for code
