@@ -12,7 +12,7 @@ export async function handler(
       (
         await ddbDocumentClient.query({
           TableName: DATA_TABLE,
-          IndexName: 'by-status',
+          IndexName: 'byStatus',
           KeyConditionExpression: '#status = :status',
           ExpressionAttributeNames: {
             '#status': 'status',

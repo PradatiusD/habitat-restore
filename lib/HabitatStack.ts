@@ -60,7 +60,7 @@ export class HabitatStack extends Stack {
     });
 
     dataTable.addGlobalSecondaryIndex({
-      indexName: 'by-status',
+      indexName: 'byStatus',
       partitionKey: {
         name: 'status',
         type: AttributeType.STRING,
