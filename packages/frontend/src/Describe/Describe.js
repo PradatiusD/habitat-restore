@@ -6,11 +6,14 @@ import Button from '@mui/material/Button';
 // import MockData from './google-vision-mock-response'
 import './Describe.css';
 import {useEffect, useState} from "react";
-function fetchStatus () {
+
+function getCurrentItemId () {
   const id = new URL(window.location.href).searchParams.get('id')
-  const url = "https://h6h6v7uald.execute-api.us-east-1.amazonaws.com/prod/donations/" + id
-  console.log('Querying id ' + id)
-  return fetch(url).then(function (res) {
+  return "https://h6h6v7uald.execute-api.us-east-1.amazonaws.com/prod/donations/" + id
+}
+
+function fetchStatus () {
+  return fetch(getCurrentItemId()).then(function (res) {
     return res.json()
   })
 }
@@ -58,6 +61,19 @@ function Describe() {
     )
   }
 
+  const onCreateProduct = function () {
+    const url = getCurrentItemId()
+    return fetch(url, {
+      method: "PUT",
+      body: JSON.stringify({
+        ...product,
+        title: productTitle
+      }, null, 2)
+    }).then(function (res) {
+      return res.json()
+    })
+  }
+
   return (
     <section className="Describe-Page">
       <p>{product && product.title}</p>
@@ -79,7 +95,9 @@ function Describe() {
                 setProductTitle(copyProduct.title)
               }}
             />
-            <Button variant="outlined" onClick={() => {}}>Create</Button>
+            <Button variant="outlined" onClick={() => {
+              onCreateProduct()
+            }}>Create Product</Button>
           </div>
         )
       }
