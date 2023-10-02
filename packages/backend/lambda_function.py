@@ -12,7 +12,7 @@ images_table = Movies(dyn_resource=dynamodb)
 
 class Lens(object):
     ENGINE = "google_lens"
-    API_KEY = "cc41959e23592cc44b2aee4513b754c9b72b82343d578b10c50da6ab376a682a"
+    API_KEY = "putYaOwnApiKeyBrothar"
 
     def __init__(self):
         self.params = {
